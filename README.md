@@ -26,6 +26,15 @@ cd /Users/muya/Projects/MyAI
 Anahtarsız yerel arama servisini başlat:
 
 ```sh
+cp searxng/settings.example.yml searxng/settings.yml
+openssl rand -hex 32
+```
+
+`openssl` komutunun ürettiği değeri yerel `searxng/settings.yml` dosyasındaki `server.secret_key` alanına koy. Bu dosya `.gitignore` kapsamındadır; her bilgisayarda ayrı anahtar kullanılmalıdır. Bu adımı bu bilgisayarda daha önce yaptıysan yeniden kopyalama.
+
+Ardından arama servisini başlat:
+
+```sh
 docker compose up -d
 ```
 

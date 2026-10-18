@@ -4,3 +4,4 @@ MyAI.Api/data/knowledge.json
 MyAI.Api/data/knowledge.json.tmp
 MyAI.Api/data/conversations.json
 MyAI.Api/data/conversations.json.tmp
+searxng/settings.yml
