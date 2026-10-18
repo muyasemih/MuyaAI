@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MuyaAI</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg-main: #f7f6f2;
+            --bg-sidebar: #efeee8;
+            --bg-card: #fffefa;
+            --bg-hover: #e8ece4;
+            --text-main: #343b35;
+            --text-muted: #747d74;
+            --accent-gradient: linear-gradient(135deg, #557653, #7c9b82, #9d8b70);
+            --accent: #557653;
+            --danger: #a65048;
+            --radius-lg: 24px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SOL KENAR ÇUBUĞU (SIDEBAR) --- */
+        aside {
+            width: 300px;
+            background-color: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(58, 70, 58, 0.12);
+            padding: 20px 16px;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-gemini {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .new-chat-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid rgba(58, 70, 58, 0.12);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease;
+        }
+
+        .new-chat-btn span {
+            color: var(--accent);
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .new-chat-btn:hover {
+            background: var(--bg-hover);
+            border-color: rgba(85, 118, 83, 0.3);
+        }
+
+        .new-chat-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .chat-history {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 110px;
+            max-height: 38vh;
+        }
+
+        .conversation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        .conversation-row {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            min-width: 0;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            color: var(--text-main);
+            transition: background 0.16s ease, border-color 0.16s ease;
+        }
+
+        .conversation-row:hover {
+            background: var(--bg-hover);
+        }
+
+        .conversation-row.active {
+            background: #e4eadf;
+            border-color: rgba(85, 118, 83, 0.2);
+        }
+
+        .conversation-select {
+            min-width: 0;
+            flex: 1;
+            overflow: hidden;
+            padding: 9px;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font: inherit;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .conversation-delete {
+            flex: 0 0 auto;
+            width: 28px;
+            height: 28px;
+            margin-right: 4px;
+            border: 0;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            opacity: 0;
+            transition: background 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+        }
+
+        .conversation-row:hover .conversation-delete,
+        .conversation-delete:focus-visible {
+            opacity: 1;
+        }
+
+        .conversation-delete:hover {
+            background: rgba(166, 80, 72, 0.1);
+            color: var(--danger);
+        }
+
+        .history-empty {
+            padding: 6px 2px;
+            color: var(--text-muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Switch Stili */
+        .switch-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-card);
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid rgba(58, 70, 58, 0.1);
+        }
+
+        .switch-label input {
+            cursor: pointer;
+            accent-color: var(--accent);
+            width: 16px;
+            height: 16px;
+        }
+
+        .setting-note {
+            color: var(--text-muted);
+            font-size: 11px;
+            line-height: 1.45;
+            margin-top: -6px;
+        }
+
+        .file-upload-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(85, 118, 83, 0.045);
+            border: 1px dashed rgba(85, 118, 83, 0.24);
+            padding: 10px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--accent);
+            transition: all 0.2s ease;
+        }
+
+        .file-upload-btn:hover {
+            background: rgba(85, 118, 83, 0.09);
+        }
+
+        .source-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+        }
+
+        .source-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 190px;
+        }
+
+        .source-remove {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .source-remove:hover {
+            background: rgba(166, 80, 72, 0.1);
+        }
+
+        /* --- ANA SOHBET ALANI --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background-color: var(--bg-main);
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 24px 140px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 860px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .hero {
+            text-align: left;
+            margin-top: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .hero h2 {
+            font-size: 40px;
+            font-weight: 500;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        .message-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .avatar.ai {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .avatar.user {
+            background: #e8ece4;
+            color: var(--text-main);
+        }
+
+        .message-content {
+            flex: 1;
+            line-height: 1.6;
+            font-size: 15px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .message-row.user .message-content {
+            background: var(--bg-card);
+            padding: 10px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            align-self: flex-start;
+        }
+
+        .sources-tag {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--accent);
+            background: rgba(85, 118, 83, 0.09);
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .sources-tag a {
+            color: var(--accent);
+            display: block;
+            margin-top: 5px;
+            text-decoration: none;
+        }
+
+        .sources-tag a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- ALT GİRDİ PANELİ (GEMINI STİLİ CAPSULE) --- */
+        .bottom-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 24px 24px 24px;
+            background: linear-gradient(180deg, transparent 0%, var(--bg-main) 30%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-box-wrapper {
+            max-width: 860px;
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(58, 70, 58, 0.12);
+            box-shadow: 0 8px 24px rgba(55, 65, 52, 0.09);
+            transition: border 0.2s ease;
+        }
+
+        .input-box-wrapper:focus-within {
+            border-color: rgba(85, 118, 83, 0.42);
+        }
+
+        /* Yüklü PDF Kartı */
+        .active-doc-badge {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-hover);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            color: var(--accent);
+            width: fit-content;
+        }
+
+        .active-doc-badge.active {
+            display: flex;
+        }
+
+        .active-doc-badge span.close {
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        .active-doc-badge span.close:hover {
+            color: var(--danger);
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-row textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 15px;
+            resize: none;
+            height: 24px;
+            max-height: 120px;
+            line-height: 24px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-main);
+        }
+
+        .icon-btn.send-btn {
+            color: var(--accent);
+        }
+
+        .icon-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            font-size: 12px;
+            color: var(--text-muted);
+            height: 16px;
+        }
+
+        /* Gizli file inputlar */
+        input[type="file"].hidden {
+            display: none;
+        }
+
+        @media (max-width: 760px) {
+            aside {
+                width: 250px;
+                padding: 16px 12px;
+            }
+
+            .chat-container {
+                padding: 32px 18px 132px;
+            }
+
+            .hero h2 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            body {
+                flex-direction: column;
+            }
+
+            aside {
+                width: 100%;
+                height: 38vh;
+                min-height: 205px;
+                max-height: 260px;
+                padding: 12px;
+                gap: 9px;
+                border-right: 0;
+                border-bottom: 1px solid rgba(58, 70, 58, 0.12);
+            }
+
+            .brand {
+                font-size: 17px;
+            }
+
+            .new-chat-btn {
+                padding: 8px 10px;
+            }
+
+            .chat-history {
+                min-height: 68px;
+                max-height: 94px;
+            }
+
+            .conversation-list {
+                max-height: 65px;
+            }
+
+            .bottom-bar {
+                padding: 12px 12px 16px;
+            }
+
+            .chat-container {
+                padding: 24px 12px 120px;
+            }
+
+            .message-row {
+                gap: 10px;
+            }
+
+            .hero h2 {
+                font-size: 27px;
+            }
+
+            .hero p {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sol kenar çubuğu: geçmiş, ayarlar ve bilgi tabanı -->
+    <aside>
+        <div class="brand">
+            <span class="brand-gemini">✦ MuyaAI</span>
+        </div>
+
+        <button id="newChatBtn" class="new-chat-btn" type="button"><span>＋</span> Yeni sohbet</button>
+
+        <section class="chat-history" aria-label="Sohbet geçmişi">
+            <span class="sidebar-title">Sohbetler</span>
+            <div id="conversationList" class="conversation-list"></div>
+        </section>
+
+        <div class="sidebar-section">
+            <span class="sidebar-title">Ayarlar</span>
+            <label class="switch-label">
+                <span>Bilgi tabanını (RAG) kullan</span>
+                <input id="useKnowledge" type="checkbox" checked>
+            </label>
+
+            <label class="switch-label">
+                <span>İnternette ara</span>
+                <input id="useWebSearch" type="checkbox" checked>
+            </label>
+            <div class="setting-note" id="webSearchStatus">Genel arama SearXNG'e, hava durumu sorguları Open-Meteo'ya gider.</div>
+
+            <span class="sidebar-title" style="margin-top: 10px;">Bilgi Tabanı Belgeleri</span>
+            <label class="file-upload-btn">
+                <span>+ Belge Ekle (.pdf, .txt, .md)</span>
+                <input id="knowledgeFile" class="hidden" type="file" accept=".pdf,.txt,.md">
+            </label>
+            <div id="knowledgeStatus" class="status-indicator"></div>
+            
+            <div id="knowledgeList" class="source-list"></div>
+        </div>
+    </aside>
+
+    <!-- Ana Sohbet Alanı -->
+    <main>
+        <div id="chatContainer" class="chat-container">
+            <div id="heroPrompt" class="hero">
+                <h2>Merhaba, Sana nasıl yardımcı olabilirim?</h2>
+                <p>Genel konulardan bahsedebilir, PDF yükleyip sorular sorabilir veya bilgi tabanını kullanabilirsin.</p>
+            </div>
+        </div>
+
+        <!-- Alt Giriş Çubuğu -->
+        <div class="bottom-bar">
+            <div class="input-box-wrapper">
+                <!-- Aktif PDF Rozeti -->
+                <div id="docBadge" class="active-doc-badge">
+                    <span>📄 <strong id="docBadgeName">belge.pdf</strong> modunda</span>
+                    <span id="removeDoc" class="close" title="Moddan çık">✕</span>
+                </div>
+
+                <div class="input-row">
+                    <!-- PDF Yükle Butonu -->
+                    <label class="icon-btn" title="PDF Yükle ve Belgeye Sor">
+                        📎
+                        <input id="pdfFileInput" class="hidden" type="file" accept=".pdf,application/pdf">
+                    </label>
+
+                    <textarea id="messageInput" rows="1" placeholder="Bir mesaj yazın veya PDF ekleyin..."></textarea>
+
+                    <button id="sendBtn" class="icon-btn send-btn" title="Gönder">➤</button>
+                </div>
+            </div>
+            <div id="footerStatus" class="status-indicator"></div>
+        </div>
+    </main>
+
+    <script>
+        const chatContainer = document.getElementById("chatContainer");
+        const heroPrompt = document.getElementById("heroPrompt");
+        const messageInput = document.getElementById("messageInput");
+        const sendBtn = document.getElementById("sendBtn");
+        const footerStatus = document.getElementById("footerStatus");
+
+        const pdfFileInput = document.getElementById("pdfFileInput");
+        const docBadge = document.getElementById("docBadge");
+        const docBadgeName = document.getElementById("docBadgeName");
+        const removeDoc = document.getElementById("removeDoc");
+
+        const useKnowledge = document.getElementById("useKnowledge");
+        const useWebSearch = document.getElementById("useWebSearch");
+        const webSearchStatus = document.getElementById("webSearchStatus");
+        const knowledgeFile = document.getElementById("knowledgeFile");
+        const knowledgeStatus = document.getElementById("knowledgeStatus");
+        const knowledgeList = document.getElementById("knowledgeList");
+        const conversationList = document.getElementById("conversationList");
+        const newChatBtn = document.getElementById("newChatBtn");
+
+        let conversationId = localStorage.getItem("muyaai.activeConversationId") || "";
+        let documentId = null; // Yüklü PDF varsa saklanır
+        let isSending = false;
+
+        async function refreshConversationList() {
+            try {
+                const response = await fetch("/api/conversations");
+                if (!response.ok) throw new Error("Sohbet geçmişi alınamadı.");
+                const conversations = await response.json();
+                conversationList.replaceChildren();
+
+                if (conversations.length === 0) {
+                    const empty = document.createElement("div");
+                    empty.className = "history-empty";
+                    empty.textContent = "Henüz kayıtlı sohbet yok.";
+                    conversationList.appendChild(empty);
+                    return conversations;
+                }
+
+                conversations.forEach(conversation => {
+                    const row = document.createElement("div");
+                    row.className = `conversation-row${conversation.id === conversationId ? " active" : ""}`;
+
+                    const select = document.createElement("button");
+                    select.type = "button";
+                    select.className = "conversation-select";
+                    select.textContent = conversation.title || "Yeni sohbet";
+                    select.title = conversation.title || "Yeni sohbet";
+                    select.addEventListener("click", () => openConversation(conversation.id));
+
+                    const remove = document.createElement("button");
+                    remove.type = "button";
+                    remove.className = "conversation-delete";
+                    remove.textContent = "✕";
+                    remove.title = "Sohbeti sil";
+                    remove.setAttribute("aria-label", `${conversation.title || "Sohbet"} sohbetini sil`);
+                    remove.addEventListener("click", () => deleteConversation(conversation.id));
+
+                    row.append(select, remove);
+                    conversationList.appendChild(row);
+                });
+                return conversations;
+            } catch {
+                conversationList.textContent = "Sohbet geçmişi yüklenemedi.";
+                return [];
+            }
+        }
+
+        async function leaveDocumentMode() {
+            const oldDocumentId = documentId;
+            documentId = null;
+            docBadge.classList.remove("active");
+            if (oldDocumentId) {
+                try {
+                    await fetch(`/api/documents/${oldDocumentId}`, { method: "DELETE" });
+                } catch {}
+            }
+        }
+
+        async function openConversation(id) {
+            if (isSending) {
+                footerStatus.textContent = "Yanıt tamamlanınca başka bir sohbete geçebilirsin.";
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/conversations/${encodeURIComponent(id)}`);
+                if (!response.ok) throw new Error("Bu sohbet açılamadı.");
+                const conversation = await response.json();
+                await leaveDocumentMode();
+
+                conversationId = conversation.id;
+                localStorage.setItem("muyaai.activeConversationId", conversationId);
+                chatContainer.replaceChildren();
+
+                if (!conversation.messages?.length) {
+                    heroPrompt.style.display = "";
+                    chatContainer.appendChild(heroPrompt);
+                } else {
+                    heroPrompt.style.display = "none";
+                    for (const message of conversation.messages) {
+                        const content = appendMessage(message.role, message.content);
+                        if (message.role === "assistant" && message.sources?.length)
+                            renderSources(content, message.sources);
+                    }
+                }
+
+                footerStatus.textContent = "";
+                await refreshConversationList();
+            } catch (error) {
+                footerStatus.textContent = "Hata: " + error.message;
+            }
+        }
+
+        async function createConversation() {
+            if (isSending) return;
+            try {
+                const response = await fetch("/api/conversations", { method: "POST" });
+                if (!response.ok) throw new Error("Yeni sohbet açılamadı.");
+                const conversation = await response.json();
+                await openConversation(conversation.id);
+                messageInput.focus();
+            } catch (error) {
+                footerStatus.textContent = "Hata: " + error.message;
+            }
+        }
+
+        async function deleteConversation(id) {
+            if (isSending || !window.confirm("Bu sohbeti ve mesaj geçmişini silmek istiyor musun?")) return;
+            try {
+                const response = await fetch(`/api/conversations/${encodeURIComponent(id)}`, { method: "DELETE" });
+                if (!response.ok) throw new Error("Sohbet silinemedi.");
+
+                if (id === conversationId) {
+                    conversationId = "";
+                    localStorage.removeItem("muyaai.activeConversationId");
+                    const remaining = await refreshConversationList();
+                    if (remaining.length > 0) await openConversation(remaining[0].id);
+                    else await createConversation();
+                    return;
+                }
+                await refreshConversationList();
+            } catch (error) {
+                footerStatus.textContent = "Hata: " + error.message;
+            }
+        }
+
+        newChatBtn.addEventListener("click", createConversation);
+
+        // Mesaj Ekranı Fonksiyonu
+        function appendMessage(role, text = "") {
+            if (heroPrompt) heroPrompt.style.display = "none";
+
+            const row = document.createElement("div");
+            row.className = `message-row ${role}`;
+
+            const avatar = document.createElement("div");
+            avatar.className = `avatar ${role === "user" ? "user" : "ai"}`;
+            avatar.textContent = role === "user" ? "S" : "✦";
+
+            const content = document.createElement("div");
+            content.className = "message-content";
+            content.textContent = text;
+
+            row.append(avatar, content);
+            chatContainer.appendChild(row);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return content;
+        }
+
+        function renderSources(container, sources) {
+            const tag = document.createElement("div");
+            tag.className = "sources-tag";
+            tag.append(document.createTextNode("Kaynaklar:"));
+
+            sources.forEach(source => {
+                if (source.kind === "web") {
+                    let url;
+                    try { url = new URL(source.url); } catch { return; }
+                    if (url.protocol !== "https:" && url.protocol !== "http:") return;
+
+                    const link = document.createElement("a");
+                    link.href = url.href;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.textContent = `[Web ${source.webIndex}] ${source.title}`;
+                    tag.appendChild(link);
+                } else {
+                    const item = document.createElement("span");
+                    const score = Number.isFinite(source.score) ? ` (${source.score})` : "";
+                    item.append(document.createTextNode(` ${source.title}${score}`));
+                    tag.appendChild(item);
+                }
+            });
+
+            if (tag.childElementCount > 0) container.appendChild(tag);
+        }
+
+        // Stream İstemcisi
+        async function streamReply(url, payload, onText, onResponse) {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                let msg = "İstek başarısız oldu.";
+                try {
+                    const data = await response.json();
+                    msg = data.error || data.detail || msg;
+                } catch {}
+                throw new Error(msg);
+            }
+
+            if (onResponse) onResponse(response);
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let full = "";
+            let pending = "";
+            let completed = false;
+
+            function consumeLine(line) {
+                if (!line.trim()) return;
+
+                const event = JSON.parse(line);
+                if (event.type === "delta") {
+                    full += event.text || "";
+                    onText(full);
+                } else if (event.type === "done") {
+                    completed = true;
+                } else if (event.type === "error") {
+                    throw new Error(event.message || "Yanıt akışı tamamlanamadı.");
+                }
+            }
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                pending += decoder.decode(value, { stream: true });
+                const lines = pending.split("\n");
+                pending = lines.pop();
+                lines.forEach(consumeLine);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            pending += decoder.decode();
+            if (pending.trim()) consumeLine(pending);
+            if (!completed) throw new Error("Yanıt beklenmedik biçimde kesildi.");
+            return full;
+        }
+
+        // Mesaj Gönderim Mantığı
+        async function handleSend() {
+            const text = messageInput.value.trim();
+            if (!text || isSending || !conversationId) return;
+
+            isSending = true;
+            appendMessage("user", text);
+            messageInput.value = "";
+            adjustTextarea();
+
+            sendBtn.disabled = true;
+            newChatBtn.disabled = true;
+            footerStatus.textContent = documentId ? "Belge inceleniyor..." : "Cevap hazırlanıyor...";
+
+            let aiContent = null;
+            let sources = null;
+
+            try {
+                if (documentId) {
+                    // PDF'e Soru Sorma Modu
+                    await streamReply(
+                        `/api/documents/${documentId}/chat`,
+                        { question: text, conversationId },
+                        (chunk) => {
+                            if (!aiContent) {
+                                aiContent = appendMessage("assistant", "");
+                                footerStatus.textContent = "";
+                            }
+                            aiContent.textContent = chunk;
+                        }
+                    );
+                } else {
+                    // Normal Sohbet / RAG Modu
+                    await streamReply(
+                        "/api/chat",
+                        {
+                            message: text,
+                            conversationId,
+                            useKnowledge: useKnowledge.checked,
+                            useWebSearch: useWebSearch.checked
+                        },
+                        (chunk) => {
+                            if (!aiContent) {
+                                aiContent = appendMessage("assistant", "");
+                                footerStatus.textContent = "";
+                            }
+                            aiContent.textContent = chunk;
+                        },
+                        (response) => {
+                            const raw = response.headers.get("X-Sources");
+                            if (raw) sources = JSON.parse(decodeURIComponent(raw));
+                        }
+                    );
+
+                    if (sources && sources.length > 0 && aiContent)
+                        renderSources(aiContent, sources);
+                }
+            } catch (err) {
+                footerStatus.textContent = "Hata: " + err.message;
+            } finally {
+                isSending = false;
+                sendBtn.disabled = false;
+                newChatBtn.disabled = false;
+                await refreshConversationList();
+                messageInput.focus();
+            }
+        }
+
+        // PDF Yükleme
+        pdfFileInput.addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            footerStatus.textContent = "PDF yükleniyor ve okunuyor...";
+            sendBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const res = await fetch("/api/documents", { method: "POST", body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || data.detail || "PDF yüklenemedi.");
+
+                documentId = data.documentId;
+                docBadgeName.textContent = data.fileName;
+                docBadge.classList.add("active");
+
+                const truncationNotice = data.truncated
+                    ? ` Belgenin yalnızca ilk ${data.maxCharacters.toLocaleString("tr-TR")} karakteri kullanılacak.`
+                    : "";
+                appendMessage("assistant", `📄 ${data.fileName} yüklendi (${data.pageCount} sayfa). Artık bu belge hakkında soru sorabilirsin.${truncationNotice}`);
+                footerStatus.textContent = "";
+            } catch (err) {
+                footerStatus.textContent = "Hata: " + err.message;
+            } finally {
+                sendBtn.disabled = false;
+                pdfFileInput.value = "";
+            }
+        });
+
+        // PDF Modundan Çıkış
+        removeDoc.addEventListener("click", async () => {
+            await leaveDocumentMode();
+            appendMessage("assistant", "PDF modu kapatıldı. Normal sohbete dönüldü.");
+        });
+
+        // Bilgi Tabanı Listesini Yükle
+        async function loadSources() {
+            try {
+                const res = await fetch("/api/knowledge");
+                if (!res.ok) throw new Error("Bilgi tabanı alınamadı.");
+                const sources = await res.json();
+                knowledgeList.replaceChildren();
+
+                if (sources.length === 0) {
+                    const empty = document.createElement("span");
+                    empty.style.cssText = "font-size:12px; color:var(--text-muted);";
+                    empty.textContent = "Taban boş.";
+                    knowledgeList.appendChild(empty);
+                    return;
+                }
+
+                sources.forEach(source => {
+                    const row = document.createElement("div");
+                    row.className = "source-item";
+                    const name = document.createElement("span");
+                    name.className = "source-name";
+                    name.title = source.name;
+                    name.textContent = source.name;
+
+                    const remove = document.createElement("button");
+                    remove.className = "source-remove";
+                    remove.title = "Sil";
+                    remove.textContent = "✕";
+                    remove.addEventListener("click", async () => {
+                        const response = await fetch(`/api/knowledge/${encodeURIComponent(source.id)}`, { method: "DELETE" });
+                        if (response.ok) await loadSources();
+                    });
+                    row.append(name, remove);
+                    knowledgeList.appendChild(row);
+                });
+            } catch (err) {
+                knowledgeList.textContent = "Yüklenemedi.";
+            }
+        }
+
+        // Bilgi Tabanına Dosya Ekle
+        knowledgeFile.addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            knowledgeStatus.textContent = "Dizinleniyor...";
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const res = await fetch("/api/knowledge", { method: "POST", body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || data.detail || "Eklenemedi.");
+
+                knowledgeStatus.textContent = "Eklendi!";
+                setTimeout(() => knowledgeStatus.textContent = "", 2500);
+                await loadSources();
+            } catch (err) {
+                knowledgeStatus.textContent = "Hata: " + err.message;
+            } finally {
+                knowledgeFile.value = "";
+            }
+        });
+
+        // Textarea Dinamik Boyut & Klavye Kısayolları
+        function adjustTextarea() {
+            messageInput.style.height = "auto";
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + "px";
+        }
+
+        messageInput.addEventListener("input", adjustTextarea);
+        messageInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        sendBtn.addEventListener("click", handleSend);
+
+        async function loadWebSearchStatus() {
+            try {
+                const response = await fetch("/api/web-search/status");
+                if (!response.ok) throw new Error();
+                const status = await response.json();
+                if (!status.available) {
+                    useWebSearch.checked = false;
+                    useWebSearch.disabled = true;
+                } else {
+                    useWebSearch.disabled = false;
+                }
+                webSearchStatus.textContent = status.reachable
+                    ? "Genel arama SearXNG'e; hava durumu sorguları Open-Meteo'ya gönderilir."
+                    : "Genel arama için proje klasöründe docker compose up -d çalıştır. Hava durumu ayrı kaynaktan alınır.";
+            } catch {
+                useWebSearch.checked = false;
+                useWebSearch.disabled = true;
+                webSearchStatus.textContent = "İnternet arama durumu alınamadı.";
+            }
+        }
+
+        async function initializeConversations() {
+            const conversations = await refreshConversationList();
+            const savedConversation = conversations.find(item => item.id === conversationId);
+            if (savedConversation) {
+                await openConversation(savedConversation.id);
+            } else if (conversations.length > 0) {
+                await openConversation(conversations[0].id);
+            } else {
+                await createConversation();
+            }
+        }
+
+        // Başlangıç
+        loadSources();
+        loadWebSearchStatus();
+        initializeConversations();
+    </script>
+</body>
+</html>

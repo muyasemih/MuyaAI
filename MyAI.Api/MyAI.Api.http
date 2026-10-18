@@ -1,0 +1,16 @@
+@MyAI.Api_HostAddress = http://localhost:5097
+
+GET {{MyAI.Api_HostAddress}}/api/web-search/status
+Accept: application/json
+
+###
+
+POST {{MyAI.Api_HostAddress}}/api/chat
+Content-Type: application/json
+
+{
+  "message": "Türkiye'deki son teknoloji haberleri neler?",
+  "conversationId": "local-test",
+  "useKnowledge": true,
+  "useWebSearch": true
+}

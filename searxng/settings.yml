@@ -1,0 +1,16 @@
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "MuyaAI Yerel Arama"
+
+search:
+  default_lang: "tr"
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "8fd7c863c52c12e11e6b6d2a8f46e5d9ad1b73ef1ed69a55df2a91b4c3e8a570"
+  limiter: false
+  image_proxy: false
